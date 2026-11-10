@@ -1,27 +1,7 @@
 import { ApplicationSettings } from '@nativescript/core';
+import type { GetOptions, RemoveAllOptions, RemoveOptions, SetOptions } from './@types/SecureStorage';
 
-export interface SetOptions {
-	accessGroup?: string;
-	service?: string;
-	key: string;
-	value: string;
-}
-
-export interface GetOptions {
-	accessGroup?: string;
-	service?: string;
-	key: string;
-}
-
-export interface RemoveOptions {
-	accessGroup?: string;
-	service?: string;
-	key: string;
-}
-
-export interface RemoveAllOptions {
-	service?: string;
-}
+export type { GetOptions, RemoveAllOptions, RemoveOptions, SetOptions };
 
 export abstract class SecureStorageCommon {
 	protected static IS_FIRST_RUN = '__IS_FIRST_RUN__';
