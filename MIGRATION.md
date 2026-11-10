@@ -19,11 +19,11 @@ Hawk is still bundled, only to read the legacy store during this migration. It c
 
 ## Steps
 
-1. Replace the dependency:
+1. Replace the dependency. The package is installed from its repository, so add that repository to `approvedGitRepositories` in `.yarnrc.yml` first, as described in the [README](./README.md):
 
    ```bash
    yarn remove @nativescript/secure-storage
-   yarn add @nostradamus/ns-secure-storage
+   yarn add "@nostradamus/ns-secure-storage@github:NostradamusICTBV/ns-secure-storage#commit=<commit>"
    ```
 
 2. Update the imports. Nothing else in the calling code changes:
