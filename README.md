@@ -188,13 +188,14 @@ To setup:
 ```bash
 bun install
 bun run build
-bun test
+bun run test:unit
 bun run code:format
 ```
 
 - Sources live in `src/`; `bun run build` compiles them to `dist/`.
 - `bun run code:format` formats the code with Prettier, using the settings of the upstream repository so the upstream sources stay untouched.
-- The unit tests in `test/unit/specs/` cover the Android backend against a fake Keystore bridge; they do not replace a check on a device.
+- `bun run test:unit` runs the unit tests in `test/unit/specs/` through [istanbun](https://github.com/jeroenzwart/istanbun) and fails below 100% line coverage; the HTML report is written to `test/unit/coverage/`.
+- The tests cover the shared first-run logic and the Android backend against a fake Keystore bridge. The iOS backend is not loaded by the tests, so they do not replace a check on a device.
 - `src/index.android.ts` and `src/index.ios.ts` are the platform implementations. `main` in `package.json` is extensionless on purpose: the NativeScript bundler appends `.android.js` or `.ios.js`.
 - Types shared between files live in `src/@types/`.
 - Only the Android backend differs from upstream, so `dist/common.js` and `dist/index.ios.js` should stay identical to the files published in `@nativescript/secure-storage` 4.0.2.
