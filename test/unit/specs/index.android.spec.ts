@@ -38,6 +38,16 @@ class FakePreferences {
 	}
 }
 
+class BrokenPreferences extends FakePreferences {
+	public override getString(): string | null {
+		throw new Error('KEYSTORE_FAILURE');
+	}
+
+	public override edit(): FakeEditor {
+		throw new Error('KEYSTORE_FAILURE');
+	}
+}
+
 class FakeMasterKeyBuilder {
 	constructor(
 		private readonly context: unknown,
@@ -85,6 +95,14 @@ mock.module('@nativescript/core', () => ({
 }));
 
 const { SecureStorage } = await import('@/index.android');
+
+const failOpening = (times: number): void => {
+	for (let attempt = 1; attempt <= times; attempt++) {
+		createPreferences.mockImplementationOnce((): FakePreferences => {
+			throw new Error('KEYSET_UNREADABLE');
+		});
+	}
+};
 
 describe('@/index.android', () => {
 	beforeEach(() => {
@@ -171,19 +189,41 @@ describe('@/index.android', () => {
 		expect(context.deleteSharedPreferences.mock.calls).toEqual([['Hawk2'], ['crypto.KEY_256']]);
 	});
 
-	it('should rebuild an empty store when the keyset cannot be read', () => {
+	it('should keep the store when opening it fails only once', () => {
 		// Arrange
-		createPreferences.mockImplementationOnce((): FakePreferences => {
-			throw new Error('KEYSET_UNREADABLE');
-		});
+		failOpening(1);
+
+		// Act
+		new SecureStorage();
+
+		// Assert
+		expect(createPreferences).toHaveBeenCalledTimes(2);
+		expect(context.deleteSharedPreferences).not.toHaveBeenCalledWith('secure_prefs');
+	});
+
+	it('should rebuild an empty store when the keyset stays unreadable', () => {
+		// Arrange
+		failOpening(2);
 
 		// Act
 		const storage = new SecureStorage();
 
 		// Assert
 		expect(context.deleteSharedPreferences.mock.calls[0]).toEqual(['secure_prefs']);
-		expect(createPreferences).toHaveBeenCalledTimes(2);
+		expect(createPreferences).toHaveBeenCalledTimes(3);
 		expect(storage.getSync({ key: 'ApiToken' })).toBeNull();
+	});
+
+	it('should reject the async methods when the native call fails', async () => {
+		// Arrange
+		createPreferences.mockImplementation((): FakePreferences => new BrokenPreferences());
+		const storage = new SecureStorage();
+
+		// Assert
+		await expect(storage.get({ key: 'ApiToken' })).rejects.toThrow('KEYSTORE_FAILURE');
+		await expect(storage.set({ key: 'ApiToken', value: 'token-1' })).rejects.toThrow('KEYSTORE_FAILURE');
+		await expect(storage.remove({ key: 'ApiToken' })).rejects.toThrow('KEYSTORE_FAILURE');
+		await expect(storage.removeAll()).rejects.toThrow('KEYSTORE_FAILURE');
 	});
 
 	it('should fail when the store cannot be rebuilt', () => {

@@ -54,7 +54,7 @@ For an app that keeps its API token in secure storage this means **every Android
 
 - **Values are strings.** The typed API already only accepted strings; values that were written to Hawk directly from native code are not readable.
 - **One store per process.** All `SecureStorage` instances share the same opened store, so creating an instance per call is cheap.
-- **Keystore invalidation resets the store.** When the Keystore key can no longer decrypt the data, for example after the data was restored on another device, the store is dropped and rebuilt empty. The app sees `null` values and the user logs in again.
+- **Keystore invalidation resets the store.** When the Keystore key can no longer decrypt the data, for example after the data was restored on another device, opening the store fails twice in a row and the store is dropped and rebuilt empty. The app sees `null` values and the user logs in again.
 - **Backups.** The encrypted file can be included in an Android backup, but the key never leaves the device. A restore on another device therefore ends in the reset described above. Apps with `android:allowBackup="false"` are not affected.
 
 ## Verifying the migration
