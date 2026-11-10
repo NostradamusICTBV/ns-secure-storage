@@ -6,6 +6,8 @@
 	"types": "dist/index.d.ts",
 	"scripts": {
 		"build": "rm -rf dist && tsc && cp -R src/index.d.ts src/@types dist",
+		"code:format": "prettier --write .",
+		"code:format:check": "prettier --check .",
 		"test": "bun test",
 		"prepack": "bun run build"
 	},
@@ -23,7 +25,15 @@
 	"bugs": {
 		"url": "https://github.com/NostradamusICTBV/ns-secure-storage/issues"
 	},
-	"keywords": ["NativeScript", "TypeScript", "iOS", "Android", "Keychain", "Keystore", "EncryptedSharedPreferences"],
+	"keywords": [
+		"NativeScript",
+		"TypeScript",
+		"iOS",
+		"Android",
+		"Keychain",
+		"Keystore",
+		"EncryptedSharedPreferences"
+	],
 	"author": {
 		"name": "Nostradamus ICT BV"
 	},
@@ -34,7 +44,13 @@
 	"devDependencies": {
 		"@nativescript/core": "^9.1.0",
 		"@nativescript/types": "~9.1.0",
+		"prettier": "^3.9.10",
 		"typescript": "^6.0.3"
 	},
-	"files": ["dist", "platforms", "CHANGELOG.md", "MIGRATION.md"]
+	"files": [
+		"dist",
+		"platforms",
+		"CHANGELOG.md",
+		"MIGRATION.md"
+	]
 }

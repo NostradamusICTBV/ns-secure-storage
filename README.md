@@ -21,36 +21,41 @@ The Android backend is `androidx.security:security-crypto` `EncryptedSharedPrefe
 
 ```ts
 // require the plugin
-import { SecureStorage } from "@nostradamus/ns-secure-storage";
+import { SecureStorage } from '@nostradamus/ns-secure-storage';
 
 // instantiate the plugin
 const secureStorage = new SecureStorage();
 
 // async
-secureStorage.set({
-  key: "foo",
-  value: "I was set at " + new Date()
-}).then(success => console.log("Successfully set a value? " + success));
+secureStorage
+	.set({
+		key: 'foo',
+		value: 'I was set at ' + new Date(),
+	})
+	.then((success) => console.log('Successfully set a value? ' + success));
 
 // sync
 const success = secureStorage.setSync({
-  key: "foo",
-  value: "I was set at " + new Date()
+	key: 'foo',
+	value: 'I was set at ' + new Date(),
 });
 ```
 
 ### `get` | `getSync`
+
 Will return `null` if not found.
 
 ```ts
 // async
-secureStorage.get({
-  key: "foo"
-}).then(value => console.log("Got value: " + value));
+secureStorage
+	.get({
+		key: 'foo',
+	})
+	.then((value) => console.log('Got value: ' + value));
 
 // sync
 const value = secureStorage.getSync({
-  key: "foo"
+	key: 'foo',
 });
 ```
 
@@ -58,13 +63,15 @@ const value = secureStorage.getSync({
 
 ```ts
 // async
-secureStorage.remove({
-  key: "foo"
-}).then(success => console.log("Successfully removed a value? " + success));
+secureStorage
+	.remove({
+		key: 'foo',
+	})
+	.then((success) => console.log('Successfully removed a value? ' + success));
 
 // sync
 const success = secureStorage.removeSync({
-  key: "foo"
+	key: 'foo',
 });
 ```
 
@@ -72,13 +79,14 @@ const success = secureStorage.removeSync({
 
 ```ts
 // async
-secureStorage.removeAll().then(success => console.log("Successfully removed a value? " + success));
+secureStorage.removeAll().then((success) => console.log('Successfully removed a value? ' + success));
 
 // sync
 const success = secureStorage.removeAllSync();
 ```
 
 ### `clearAllOnFirstRun` | `clearAllOnFirstRunSync`
+
 These functions can be used if you want to clear data when your app is reinstalled.
 
 This is only really useful **on iOS** because if you write something (through this plugin) to the Keychain, this data **won't** be removed when the app is uninstalled.
@@ -89,8 +97,8 @@ methods before using other methods this plugin provides.
 
 ```ts
 // async
-secureStorage.clearAllOnFirstRun().then(success => {
-    console.log(success ? "Successfully removed all data on the first run" : "Data not removed because this is not the first run");
+secureStorage.clearAllOnFirstRun().then((success) => {
+	console.log(success ? 'Successfully removed all data on the first run' : 'Data not removed because this is not the first run');
 });
 
 // sync
@@ -98,25 +106,28 @@ const success = secureStorage.clearAllOnFirstRunSync();
 ```
 
 ### `isFirstRun` | `isFirstRunSync`
+
 As a bonus, you can piggyback the 'first run' mechanism to do anything you want when the plugin detects
 this is the first run (after an install or install-delete-reinstall).
 
 ```ts
 // sync
 if (secureStorage.isFirstRunSync()) {
-  // do whatever you want
+	// do whatever you want
 }
 
 // async
-secureStorage.isFirstRun().then(isFirst => {
-  // if isFirst is true, do whatever you like
+secureStorage.isFirstRun().then((isFirst) => {
+	// if isFirst is true, do whatever you like
 });
 ```
 
 ## iOS Security++
+
 By default the plugin uses `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly` access control to the keychain. This means that the keychain value can be accessed while the device is locked, once it has been unlocked after a restart. If you want to enhance security and you do not need background access, or if you want to allow the value to be backed up and migrated to another device, you can use any of keys defined [here](https://developer.apple.com/documentation/security/ksecattraccessiblealwaysthisdeviceonly?language=objc#see-also) and pass it when you create an instance of `SecureStorage`, for example
+
 ```ts
-declare const kSecAttrAccessibleWhenUnlockedThisDeviceOnly; // This is needed in case you don't have tns-platform-declarations module installed. 
+declare const kSecAttrAccessibleWhenUnlockedThisDeviceOnly; // This is needed in case you don't have tns-platform-declarations module installed.
 const secureStorage = new SecureStorage(kSecAttrAccessibleWhenUnlockedThisDeviceOnly);
 ```
 
@@ -138,31 +149,37 @@ You can share secrets between iOS apps/extensions via Keychain access groups, or
 
 To setup:
 
-* Add a keychain access group entitlement to your app
-  by adding an entry in the ```app/App_Resources/iOS/<someName>.entitlements``` file.
+- Add a keychain access group entitlement to your app
+  by adding an entry in the `app/App_Resources/iOS/<someName>.entitlements` file.
 
   e.g.
+
   ```xml
   <key>keychain-access-groups</key>
   <array>
     <string>$(AppIdentifierPrefix)com.my.app.sharedgroup</string>
   </array>
   ```
-* Then in your app specify the ```accessGroup``` property when getting/setting values.
-  e.g. 
+
+- Then in your app specify the `accessGroup` property when getting/setting values.
+  e.g.
 
   ```typescript
-  import { SecureStorage } from "@nostradamus/ns-secure-storage";
+  import { SecureStorage } from '@nostradamus/ns-secure-storage';
   export class MyComponent {
-    secureStorage = new SecureStorage();
-    // a method that can be called from your view
-    setSecureValue() {
-      this.secureStorage.set({
-        accessGroup:"<TeamID>.com.my.app.sharedgroup",
-        key: 'myKey',
-        value: 'my value'
-      }).then(success => { console.log(success)});
-    }
+  	secureStorage = new SecureStorage();
+  	// a method that can be called from your view
+  	setSecureValue() {
+  		this.secureStorage
+  			.set({
+  				accessGroup: '<TeamID>.com.my.app.sharedgroup',
+  				key: 'myKey',
+  				value: 'my value',
+  			})
+  			.then((success) => {
+  				console.log(success);
+  			});
+  	}
   }
   ```
 
@@ -172,18 +189,21 @@ To setup:
 bun install
 bun run build
 bun test
+bun run code:format
 ```
 
 - Sources live in `src/`; `bun run build` compiles them to `dist/`.
+- `bun run code:format` formats the code with Prettier, using the settings of the upstream repository so the upstream sources stay untouched.
 - The unit tests in `test/unit/specs/` cover the Android backend against a fake Keystore bridge; they do not replace a check on a device.
 - `src/index.android.ts` and `src/index.ios.ts` are the platform implementations. `main` in `package.json` is extensionless on purpose: the NativeScript bundler appends `.android.js` or `.ios.js`.
 - Types shared between files live in `src/@types/`.
 - Only the Android backend differs from upstream, so `dist/common.js` and `dist/index.ios.js` should stay identical to the files published in `@nativescript/secure-storage` 4.0.2.
 
 ## Credits
-* On __iOS__ we're leveraging the KeyChain using the [SAMKeychain](https://github.com/soffes/SAMKeychain) library,
-* On __Android__ we're using [`androidx.security:security-crypto`](https://developer.android.com/reference/androidx/security/crypto/EncryptedSharedPreferences) (`EncryptedSharedPreferences` with an Android Keystore-backed key).
-* Based on [@nativescript/secure-storage](https://github.com/NativeScript/plugins/tree/main/packages/secure-storage) by [Eddy Verbruggen](https://github.com/EddyVerbruggen) and the NativeScript team — thank you for the original work.
+
+- On **iOS** we're leveraging the KeyChain using the [SAMKeychain](https://github.com/soffes/SAMKeychain) library,
+- On **Android** we're using [`androidx.security:security-crypto`](https://developer.android.com/reference/androidx/security/crypto/EncryptedSharedPreferences) (`EncryptedSharedPreferences` with an Android Keystore-backed key).
+- Based on [@nativescript/secure-storage](https://github.com/NativeScript/plugins/tree/main/packages/secure-storage) by [Eddy Verbruggen](https://github.com/EddyVerbruggen) and the NativeScript team — thank you for the original work.
 
 ## License
 
