@@ -6,12 +6,12 @@
 		"strict": false,
 		"declaration": true,
 		"sourceMap": true,
+		"inlineSources": true,
 		"skipLibCheck": true,
 		"lib": ["ESNext", "dom"],
 		"types": ["@nativescript/types", "@nativescript/types-ios/complete"],
-		"rootDir": ".",
-		"outDir": "."
+		"rootDir": "src",
+		"outDir": "dist"
 	},
-	"files": ["common.ts", "index.android.ts", "index.ios.ts"],
-	"include": ["@types/**/*.d.ts"]
+	"include": ["src"]
 }

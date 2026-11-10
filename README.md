@@ -166,6 +166,18 @@ To setup:
   }
   ```
 
+## Development
+
+```bash
+bun install
+bun run build
+```
+
+- Sources live in `src/`; `bun run build` compiles them to `dist/`.
+- `src/index.android.ts` and `src/index.ios.ts` are the platform implementations. `main` in `package.json` is extensionless on purpose: the NativeScript bundler appends `.android.js` or `.ios.js`.
+- Types shared between files live in `src/@types/`.
+- Only the Android backend differs from upstream, so `dist/common.js` and `dist/index.ios.js` should stay identical to the files published in `@nativescript/secure-storage` 4.0.2.
+
 ## Credits
 * On __iOS__ we're leveraging the KeyChain using the [SAMKeychain](https://github.com/soffes/SAMKeychain) library,
 * On __Android__ we're using [`androidx.security:security-crypto`](https://developer.android.com/reference/androidx/security/crypto/EncryptedSharedPreferences) (`EncryptedSharedPreferences` with an Android Keystore-backed key).
