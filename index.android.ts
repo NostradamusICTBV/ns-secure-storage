@@ -1,53 +1,77 @@
 import { GetOptions, SetOptions, RemoveOptions, RemoveAllOptions, SecureStorageCommon } from './common';
 import { Utils } from '@nativescript/core';
 
-declare const com: any;
+declare const androidx: any;
+
+const PREFERENCES_FILE = 'secure_prefs';
+const MASTER_KEY_ALIAS = 'nostradamus_secure_prefs_key';
+const LEGACY_PREFERENCES = ['Hawk2', 'crypto.KEY_256'];
 
 export class SecureStorage extends SecureStorageCommon {
-	private hawk: any; // com.orhanobut.hawk.Hawk
+	// Opened once per process: consumers create an instance per read and Keystore operations are too slow to repeat.
+	private static preferences: any; // androidx.security.crypto.EncryptedSharedPreferences
 
 	constructor() {
 		super();
-		this.hawk = com.orhanobut.hawk.Hawk.init(Utils.android.getApplicationContext()).build();
+
+		if (SecureStorage.preferences === undefined) {
+			const context = Utils.android.getApplicationContext();
+			SecureStorage.preferences = SecureStorage.openPreferences(context);
+			SecureStorage.deleteLegacyStorage(context);
+		}
 	}
 
 	get(arg: GetOptions): Promise<any> {
-		return new Promise((resolve, reject) => {
-			resolve(com.orhanobut.hawk.Hawk.get(arg.key));
-		});
+		return Promise.resolve(this.getSync(arg));
 	}
 
 	getSync(arg: GetOptions): any {
-		return com.orhanobut.hawk.Hawk.get(arg.key);
+		return SecureStorage.preferences.getString(arg.key, null);
 	}
 
 	set(arg: SetOptions): Promise<boolean> {
-		return new Promise((resolve, reject) => {
-			resolve(com.orhanobut.hawk.Hawk.put(arg.key, arg.value));
-		});
+		return Promise.resolve(this.setSync(arg));
 	}
 
 	setSync(arg: SetOptions): boolean {
-		return com.orhanobut.hawk.Hawk.put(arg.key, arg.value);
+		return SecureStorage.preferences.edit().putString(arg.key, arg.value).commit();
 	}
 
 	remove(arg: RemoveOptions): Promise<boolean> {
-		return new Promise((resolve, reject) => {
-			resolve(com.orhanobut.hawk.Hawk.delete(arg.key));
-		});
+		return Promise.resolve(this.removeSync(arg));
 	}
 
 	removeSync(arg: RemoveOptions): boolean {
-		return com.orhanobut.hawk.Hawk.delete(arg.key);
+		return SecureStorage.preferences.edit().remove(arg.key).commit();
 	}
 
 	removeAll(arg?: RemoveAllOptions): Promise<boolean> {
-		return new Promise((resolve, reject) => {
-			resolve(com.orhanobut.hawk.Hawk.deleteAll());
-		});
+		return Promise.resolve(this.removeAllSync(arg));
 	}
 
 	removeAllSync(arg?: RemoveAllOptions): boolean {
-		return com.orhanobut.hawk.Hawk.deleteAll();
+		return SecureStorage.preferences.edit().clear().commit();
+	}
+
+	private static openPreferences(context: any): any {
+		try {
+			return SecureStorage.buildPreferences(context);
+		} catch (error) {
+			// Recover from an invalidated Keystore keyset (device-credential change or restore to another device): drop the corrupted store and rebuild empty so the app re-logs in instead of crashing on every launch.
+			context.deleteSharedPreferences(PREFERENCES_FILE);
+			return SecureStorage.buildPreferences(context);
+		}
+	}
+
+	private static buildPreferences(context: any): any {
+		const masterKey = new androidx.security.crypto.MasterKey.Builder(context, MASTER_KEY_ALIAS).setKeyScheme(androidx.security.crypto.MasterKey.KeyScheme.AES256_GCM).build();
+
+		return androidx.security.crypto.EncryptedSharedPreferences.create(context, PREFERENCES_FILE, masterKey, androidx.security.crypto.EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, androidx.security.crypto.EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+	}
+
+	private static deleteLegacyStorage(context: any): void {
+		for (const name of LEGACY_PREFERENCES) {
+			context.deleteSharedPreferences(name);
+		}
 	}
 }
