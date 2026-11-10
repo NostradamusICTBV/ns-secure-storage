@@ -2,11 +2,11 @@
 
 `@nostradamus/ns-secure-storage` is a drop-in replacement for `@nativescript/secure-storage` 4.x. The public API is identical; only the Android storage backend changed.
 
-| | `@nativescript/secure-storage` | `@nostradamus/ns-secure-storage` |
-|---|---|---|
-| iOS | Keychain (SAMKeychain) | Keychain (SAMKeychain), unchanged |
-| Android | Hawk + Conceal, AES key in plaintext in `crypto.KEY_256.xml` | `EncryptedSharedPreferences`, AES key in the Android Keystore |
-| Android files | `Hawk2.xml`, `crypto.KEY_256.xml` | `secure_prefs.xml` |
+|               | `@nativescript/secure-storage`                               | `@nostradamus/ns-secure-storage`                              |
+| ------------- | ------------------------------------------------------------ | ------------------------------------------------------------- |
+| iOS           | Keychain (SAMKeychain)                                       | Keychain (SAMKeychain), unchanged                             |
+| Android       | Hawk + Conceal, AES key in plaintext in `crypto.KEY_256.xml` | `EncryptedSharedPreferences`, AES key in the Android Keystore |
+| Android files | `Hawk2.xml`, `crypto.KEY_256.xml`                            | `secure_prefs.xml`                                            |
 
 ## What happens to stored data
 
@@ -31,10 +31,10 @@ For an app that keeps its API token in secure storage this means **every Android
 
    ```ts
    // Before
-   import { SecureStorage } from '@nativescript/secure-storage'
+   import { SecureStorage } from '@nativescript/secure-storage';
 
    // After
-   import { SecureStorage } from '@nostradamus/ns-secure-storage'
+   import { SecureStorage } from '@nostradamus/ns-secure-storage';
    ```
 
 3. Update test mocks that name the old module, for example `jest.mock('@nativescript/secure-storage', ...)`.
