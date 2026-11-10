@@ -11,7 +11,10 @@
 		"lib": ["ESNext", "dom"],
 		"types": ["@nativescript/types", "@nativescript/types-ios/complete"],
 		"rootDir": "src",
-		"outDir": "dist"
+		"outDir": "dist",
+		"paths": {
+			"@/*": ["./src/*"]
+		}
 	},
 	"include": ["src"]
 }

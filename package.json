@@ -6,6 +6,7 @@
 	"types": "dist/index.d.ts",
 	"scripts": {
 		"build": "rm -rf dist && tsc && cp -R src/index.d.ts src/@types dist",
+		"test": "bun test",
 		"prepack": "bun run build"
 	},
 	"nativescript": {
