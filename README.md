@@ -1,10 +1,19 @@
-# @nativescript/secure-storage
+# @nostradamus/ns-secure-storage
 
-Secure Storage using [SAMKeychain](https://github.com/soffes/SAMKeychain) on iOS and [Hawk](https://github.com/orhanobut/hawk) on Android.
+Secure storage for the Nostradamus NativeScript apps. A fork of [@nativescript/secure-storage](https://github.com/NativeScript/plugins/tree/main/packages/secure-storage) that keeps the iOS [SAMKeychain](https://github.com/soffes/SAMKeychain) backend and replaces the Android backend: instead of [Hawk](https://github.com/orhanobut/hawk)/[Conceal](https://github.com/facebook/conceal) — which stores the AES key in plaintext next to the data — it uses `EncryptedSharedPreferences` with a key held in the Android Keystore.
 
 ```javascript
-npm install @nativescript/secure-storage
+npm install @nostradamus/ns-secure-storage
 ```
+
+## Android
+
+The Android backend is `androidx.security:security-crypto` `EncryptedSharedPreferences`. The encryption key lives in the Android Keystore under the alias `nostradamus_secure_prefs_key` and is never written to disk; values are stored in `secure_prefs.xml`.
+
+- **Minimum SDK: 24** (the legacy cleanup and the keyset recovery use `Context.deleteSharedPreferences`).
+- The store is opened once per process and shared by every `SecureStorage` instance, so creating instances is cheap.
+- **Migration:** on first construction the legacy Hawk files (`Hawk2.xml`, `crypto.KEY_256.xml`) are deleted. Existing secrets are not re-encrypted, so the app starts without them and the user logs in again. See [MIGRATION.md](./MIGRATION.md) for the steps when coming from `@nativescript/secure-storage`.
+- If the Keystore keyset is ever invalidated (device-credential change, restore to another device), the store is dropped and rebuilt empty rather than crashing.
 
 ## API
 
@@ -12,7 +21,7 @@ npm install @nativescript/secure-storage
 
 ```ts
 // require the plugin
-import { SecureStorage } from "@nativescript/secure-storage";
+import { SecureStorage } from "@nostradamus/ns-secure-storage";
 
 // instantiate the plugin
 const secureStorage = new SecureStorage();
@@ -105,7 +114,7 @@ secureStorage.isFirstRun().then(isFirst => {
 ```
 
 ## iOS Security++
-By default the plugin uses `kSecAttrAccessibleAlwaysThisDeviceOnly` access control to the keychain. This means that the keychain value can be accessed even if the device is locked. If you want to enhance security and you do not need background access, or if you want to allow the value to be backed up and migrated to another device, you can use any of keys defined [here](https://developer.apple.com/documentation/security/ksecattraccessiblealwaysthisdeviceonly?language=objc#see-also) and pass it when you create an instance of `SecureStorage`, for example
+By default the plugin uses `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly` access control to the keychain. This means that the keychain value can be accessed while the device is locked, once it has been unlocked after a restart. If you want to enhance security and you do not need background access, or if you want to allow the value to be backed up and migrated to another device, you can use any of keys defined [here](https://developer.apple.com/documentation/security/ksecattraccessiblealwaysthisdeviceonly?language=objc#see-also) and pass it when you create an instance of `SecureStorage`, for example
 ```ts
 declare const kSecAttrAccessibleWhenUnlockedThisDeviceOnly; // This is needed in case you don't have tns-platform-declarations module installed. 
 const secureStorage = new SecureStorage(kSecAttrAccessibleWhenUnlockedThisDeviceOnly);
@@ -143,7 +152,7 @@ To setup:
   e.g. 
 
   ```typescript
-  import { SecureStorage } from "nativescript-secure-storage";
+  import { SecureStorage } from "@nostradamus/ns-secure-storage";
   export class MyComponent {
     secureStorage = new SecureStorage();
     // a method that can be called from your view
@@ -159,10 +168,9 @@ To setup:
 
 ## Credits
 * On __iOS__ we're leveraging the KeyChain using the [SAMKeychain](https://github.com/soffes/SAMKeychain) library,
-* On __Android__ we're using [Hawk](https://github.com/orhanobut/hawk) library which internally uses [Facebook conceal](https://github.com/facebook/conceal).
-* Thanks, [Prabu Devarrajan](https://github.com/prabudevarrajan) for [adding the `deleteAll` function](https://github.com/EddyVerbruggen/nativescript-secure-storage/pull/11)!
-* Thank you [Eddy Verbruggen](https://github.com/EddyVerbruggen) for all the years of service and great work!
+* On __Android__ we're using [`androidx.security:security-crypto`](https://developer.android.com/reference/androidx/security/crypto/EncryptedSharedPreferences) (`EncryptedSharedPreferences` with an Android Keystore-backed key).
+* Based on [@nativescript/secure-storage](https://github.com/NativeScript/plugins/tree/main/packages/secure-storage) by [Eddy Verbruggen](https://github.com/EddyVerbruggen) and the NativeScript team — thank you for the original work.
 
 ## License
 
-Apache License Version 2.0
+Apache License Version 2.0 (see [LICENSE](./LICENSE)). This fork modifies the original work; the changes are listed in [CHANGELOG.md](./CHANGELOG.md).
