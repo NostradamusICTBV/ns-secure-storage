@@ -171,9 +171,11 @@ To setup:
 ```bash
 bun install
 bun run build
+bun test
 ```
 
 - Sources live in `src/`; `bun run build` compiles them to `dist/`.
+- The unit tests in `test/unit/specs/` cover the Android backend against a fake Keystore bridge; they do not replace a check on a device.
 - `src/index.android.ts` and `src/index.ios.ts` are the platform implementations. `main` in `package.json` is extensionless on purpose: the NativeScript bundler appends `.android.js` or `.ios.js`.
 - Types shared between files live in `src/@types/`.
 - Only the Android backend differs from upstream, so `dist/common.js` and `dist/index.ios.js` should stay identical to the files published in `@nativescript/secure-storage` 4.0.2.
