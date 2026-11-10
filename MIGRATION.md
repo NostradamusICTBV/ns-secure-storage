@@ -19,7 +19,7 @@ Hawk is still bundled, only to read the legacy store during this migration. It c
 
 ## Steps
 
-1. Replace the dependency. The package is installed from its repository, so add that repository to `approvedGitRepositories` in `.yarnrc.yml` first, as described in the [README](./README.md):
+1. Replace the dependency. This needs Yarn 2 or later, and `<commit>` must be the full 40-character commit hash. On Yarn 4.14 or later, first add the repository to `approvedGitRepositories` in `.yarnrc.yml`, as described in the [README](./README.md); do not add that setting on older Yarn versions:
 
    ```bash
    yarn remove @nativescript/secure-storage

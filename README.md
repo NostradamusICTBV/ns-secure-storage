@@ -2,13 +2,13 @@
 
 Secure storage for the Nostradamus NativeScript apps. A fork of [@nativescript/secure-storage](https://github.com/NativeScript/plugins/tree/main/packages/secure-storage) that keeps the iOS [SAMKeychain](https://github.com/soffes/SAMKeychain) backend and replaces the Android backend: instead of [Hawk](https://github.com/orhanobut/hawk)/[Conceal](https://github.com/facebook/conceal) — which stores the AES key in plaintext next to the data — it uses `EncryptedSharedPreferences` with a key held in the Android Keystore.
 
-The package is not published to a registry. Install it from this repository, pinned to a commit:
+The package is not published to a registry. Install it from this repository, pinned to a commit. This needs Yarn 2 or later; Yarn Classic does not support the `commit=` selector. Replace `<commit>` with the full 40-character commit hash, because Yarn rejects abbreviated hashes:
 
 ```bash
 yarn add "@nostradamus/ns-secure-storage@github:NostradamusICTBV/ns-secure-storage#commit=<commit>"
 ```
 
-Yarn builds the package while installing it. Recent Yarn 4 versions only install git dependencies from approved repositories, so list this one in the `.yarnrc.yml` of the app:
+Yarn builds the package while installing it. From Yarn 4.14 onwards, Yarn only installs git dependencies from approved repositories, so on those versions list this one in the `.yarnrc.yml` of the app (older Yarn versions do not know this setting, do not add it there):
 
 ```yaml
 approvedGitRepositories:
