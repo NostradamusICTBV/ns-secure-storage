@@ -12,5 +12,6 @@
 		"rootDir": ".",
 		"outDir": "."
 	},
-	"files": ["common.ts", "index.android.ts", "index.ios.ts", "references.d.ts"]
+	"files": ["common.ts", "index.android.ts", "index.ios.ts"],
+	"include": ["@types/**/*.d.ts"]
 }

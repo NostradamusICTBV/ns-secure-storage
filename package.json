@@ -34,5 +34,5 @@
 		"@nativescript/types": "~9.1.0",
 		"typescript": "^6.0.3"
 	},
-	"files": ["index.d.ts", "index.*.js", "index.*.js.map", "index.*.d.ts", "common.js", "common.js.map", "common.d.ts", "platforms", "README.md", "MIGRATION.md", "CHANGELOG.md", "LICENSE"]
+	"files": ["index.d.ts", "index.*.js", "index.*.js.map", "index.*.d.ts", "common.js", "common.js.map", "common.d.ts", "@types/SecureStorage.d.ts", "platforms", "README.md", "MIGRATION.md", "CHANGELOG.md", "LICENSE"]
 }
