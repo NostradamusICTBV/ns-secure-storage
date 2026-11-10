@@ -1,9 +1,12 @@
 {
-	"name": "@nativescript/secure-storage",
-	"version": "4.0.2",
-	"description": "Secure Storage NativeScript plugin",
+	"name": "@nostradamus/ns-secure-storage",
+	"version": "1.0.0",
+	"description": "NativeScript secure storage for the Nostradamus apps: Android Keystore-backed EncryptedSharedPreferences and iOS Keychain. Fork of @nativescript/secure-storage.",
 	"main": "index",
 	"typings": "index.d.ts",
+	"scripts": {
+		"build": "tsc"
+	},
 	"nativescript": {
 		"platforms": {
 			"android": "7.0.0",
@@ -12,30 +15,34 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/NativeScript/plugins.git"
+		"url": "git+https://github.com/NostradamusICTBV/ns-secure-storage.git"
 	},
-	"keywords": [
-		"NativeScript",
-		"JavaScript",
-		"TypeScript",
-		"iOS",
-		"Android"
-	],
+	"homepage": "https://github.com/NostradamusICTBV/ns-secure-storage",
+	"bugs": {
+		"url": "https://github.com/NostradamusICTBV/ns-secure-storage/issues"
+	},
+	"keywords": ["NativeScript", "TypeScript", "iOS", "Android", "Keychain", "Keystore", "EncryptedSharedPreferences"],
 	"author": {
-		"name": "Eddy Verbruggen",
-		"email": "eddyverbruggen@gmail.com"
+		"name": "Nostradamus ICT BV"
 	},
 	"contributors": [
+		{
+			"name": "Eddy Verbruggen",
+			"email": "eddyverbruggen@gmail.com"
+		},
 		{
 			"name": "NativeScript",
 			"email": "oss@nativescript.org"
 		}
 	],
-	"bugs": {
-		"url": "https://github.com/NativeScript/plugins/issues"
+	"license": "Apache-2.0",
+	"peerDependencies": {
+		"@nativescript/core": "^9.0.0"
 	},
-	"license": "MIT",
-	"homepage": "https://github.com/NativeScript/plugins",
-	"readmeFilename": "README.md",
-	"bootstrapper": "@nativescript/plugin-seed"
+	"devDependencies": {
+		"@nativescript/core": "^9.1.0",
+		"@nativescript/types": "~9.1.0",
+		"typescript": "~5.4.0"
+	},
+	"files": ["index.d.ts", "index.*.js", "index.*.js.map", "index.*.d.ts", "common.js", "common.js.map", "common.d.ts", "platforms", "README.md", "MIGRATION.md", "CHANGELOG.md", "LICENSE"]
 }

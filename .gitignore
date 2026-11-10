@@ -1,0 +1,8 @@
+node_modules/
+*.js
+*.js.map
+*.d.ts
+!index.d.ts
+!references.d.ts
+!typings/**
+.DS_Store

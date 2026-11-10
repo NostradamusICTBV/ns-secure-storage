@@ -1,9 +1,14 @@
 {
-	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
-		"outDir": "../../dist/out-tsc",
-		"rootDir": "."
+		"target": "es2020",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"declaration": true,
+		"sourceMap": true,
+		"skipLibCheck": true,
+		"lib": ["es2020", "dom"],
+		"rootDir": ".",
+		"outDir": "."
 	},
-	"exclude": ["**/*.spec.ts", "**/*.test.ts", "angular"],
-	"include": ["**/*.ts", "references.d.ts"]
+	"files": ["common.ts", "index.android.ts", "index.ios.ts", "references.d.ts"]
 }
