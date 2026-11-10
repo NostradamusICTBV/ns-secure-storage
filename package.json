@@ -2,10 +2,11 @@
 	"name": "@nostradamus/ns-secure-storage",
 	"version": "1.0.0",
 	"description": "NativeScript secure storage for the Nostradamus apps: Android Keystore-backed EncryptedSharedPreferences and iOS Keychain. Fork of @nativescript/secure-storage.",
-	"main": "index",
-	"typings": "index.d.ts",
+	"main": "dist/index",
+	"types": "dist/index.d.ts",
 	"scripts": {
-		"build": "tsc"
+		"build": "rm -rf dist && tsc && cp -R src/index.d.ts src/@types dist",
+		"prepack": "bun run build"
 	},
 	"nativescript": {
 		"platforms": {
@@ -34,5 +35,5 @@
 		"@nativescript/types": "~9.1.0",
 		"typescript": "^6.0.3"
 	},
-	"files": ["index.d.ts", "index.*.js", "index.*.js.map", "index.*.d.ts", "common.js", "common.js.map", "common.d.ts", "@types/SecureStorage.d.ts", "platforms", "README.md", "MIGRATION.md", "CHANGELOG.md", "LICENSE"]
+	"files": ["dist", "platforms", "CHANGELOG.md", "MIGRATION.md"]
 }

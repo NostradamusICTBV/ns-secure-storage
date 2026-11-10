@@ -1,8 +1,8 @@
-node_modules/
-*.js
-*.js.map
-*.d.ts
-!index.d.ts
-!@types/**
-.DS_Store
+/dist
+/node_modules
 package-lock.json
+
+# Editor directories and files
+.idea
+.vscode
+.DS_Store
