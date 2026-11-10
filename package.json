@@ -5,11 +5,11 @@
 	"main": "dist/index",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"build": "rm -rf dist && tsc && cp -R src/index.d.ts src/@types dist",
+		"build": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\" && tsc && node -e \"fs.cpSync('src/index.d.ts', 'dist/index.d.ts'); fs.cpSync('src/@types', 'dist/@types', { recursive: true })\"",
 		"code:format": "prettier --write .",
 		"code:format:check": "prettier --check .",
 		"test:unit": "istanbun --isolate",
-		"prepack": "$npm_execpath run build"
+		"prepack": "npm run build"
 	},
 	"nativescript": {
 		"platforms": {
