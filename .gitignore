@@ -1,5 +1,6 @@
 /dist
 /node_modules
+/test/unit/coverage/
 package-lock.json
 
 # Editor directories and files

@@ -8,7 +8,7 @@
 		"build": "rm -rf dist && tsc && cp -R src/index.d.ts src/@types dist",
 		"code:format": "prettier --write .",
 		"code:format:check": "prettier --check .",
-		"test": "bun test",
+		"test:unit": "istanbun --isolate",
 		"prepack": "bun run build"
 	},
 	"nativescript": {
@@ -42,6 +42,7 @@
 		"@nativescript/core": "^9.0.0"
 	},
 	"devDependencies": {
+		"@jeroenzwart/istanbun": "^1.0.3",
 		"@nativescript/core": "^9.1.0",
 		"@nativescript/types": "~9.1.0",
 		"prettier": "^3.9.10",
