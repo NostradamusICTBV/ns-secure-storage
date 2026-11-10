@@ -6,6 +6,7 @@ declare const androidx: any;
 const PREFERENCES_FILE = 'secure_prefs';
 const MASTER_KEY_ALIAS = 'nostradamus_secure_prefs_key';
 const LEGACY_PREFERENCES = ['Hawk2', 'crypto.KEY_256'];
+const OPEN_ATTEMPTS = 2;
 
 export class SecureStorage extends SecureStorageCommon {
 	// Opened once per process: consumers create an instance per read and Keystore operations are too slow to repeat.
@@ -21,32 +22,32 @@ export class SecureStorage extends SecureStorageCommon {
 		}
 	}
 
-	get(arg: GetOptions): Promise<any> {
-		return Promise.resolve(this.getSync(arg));
+	async get(arg: GetOptions): Promise<any> {
+		return this.getSync(arg);
 	}
 
 	getSync(arg: GetOptions): any {
 		return SecureStorage.preferences.getString(arg.key, null);
 	}
 
-	set(arg: SetOptions): Promise<boolean> {
-		return Promise.resolve(this.setSync(arg));
+	async set(arg: SetOptions): Promise<boolean> {
+		return this.setSync(arg);
 	}
 
 	setSync(arg: SetOptions): boolean {
 		return SecureStorage.preferences.edit().putString(arg.key, arg.value).commit();
 	}
 
-	remove(arg: RemoveOptions): Promise<boolean> {
-		return Promise.resolve(this.removeSync(arg));
+	async remove(arg: RemoveOptions): Promise<boolean> {
+		return this.removeSync(arg);
 	}
 
 	removeSync(arg: RemoveOptions): boolean {
 		return SecureStorage.preferences.edit().remove(arg.key).commit();
 	}
 
-	removeAll(arg?: RemoveAllOptions): Promise<boolean> {
-		return Promise.resolve(this.removeAllSync(arg));
+	async removeAll(arg?: RemoveAllOptions): Promise<boolean> {
+		return this.removeAllSync(arg);
 	}
 
 	removeAllSync(arg?: RemoveAllOptions): boolean {
@@ -54,13 +55,18 @@ export class SecureStorage extends SecureStorageCommon {
 	}
 
 	private static openPreferences(context: any): any {
-		try {
-			return SecureStorage.buildPreferences(context);
-		} catch (error) {
-			// Recover from an invalidated Keystore keyset (device-credential change or restore to another device): drop the corrupted store and rebuild empty so the app re-logs in instead of crashing on every launch.
-			context.deleteSharedPreferences(PREFERENCES_FILE);
-			return SecureStorage.buildPreferences(context);
+		for (let attempt = 1; attempt <= OPEN_ATTEMPTS; attempt++) {
+			try {
+				return SecureStorage.buildPreferences(context);
+			} catch (error) {
+				// A Keystore or I/O hiccup can fail a single attempt, so the store is only reset once every attempt has failed.
+			}
 		}
+
+		// Still unreadable: the Keystore key was invalidated or the data was restored on another device. Drop the store and rebuild it empty so the app re-logs in instead of crashing on every launch.
+		context.deleteSharedPreferences(PREFERENCES_FILE);
+
+		return SecureStorage.buildPreferences(context);
 	}
 
 	private static buildPreferences(context: any): any {
