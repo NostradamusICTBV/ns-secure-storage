@@ -1,12 +1,14 @@
 {
 	"compilerOptions": {
-		"target": "es2020",
-		"module": "commonjs",
-		"moduleResolution": "node",
+		"target": "ES2020",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"strict": false,
 		"declaration": true,
 		"sourceMap": true,
 		"skipLibCheck": true,
-		"lib": ["es2020", "dom"],
+		"lib": ["ESNext", "dom"],
+		"types": ["@nativescript/types", "@nativescript/types-ios/complete"],
 		"rootDir": ".",
 		"outDir": "."
 	},
