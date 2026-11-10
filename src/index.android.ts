@@ -2,10 +2,13 @@ import { GetOptions, SetOptions, RemoveOptions, RemoveAllOptions, SecureStorageC
 import { Utils } from '@nativescript/core';
 
 declare const androidx: any;
+declare const com: any;
 
 const PREFERENCES_FILE = 'secure_prefs';
 const MASTER_KEY_ALIAS = 'nostradamus_secure_prefs_key';
-const LEGACY_PREFERENCES = ['Hawk2', 'crypto.KEY_256'];
+const LEGACY_VALUES_FILE = 'Hawk2';
+const LEGACY_PREFERENCES = [LEGACY_VALUES_FILE, 'crypto.KEY_256'];
+const MODE_PRIVATE = 0; // android.content.Context.MODE_PRIVATE
 const OPEN_ATTEMPTS = 2;
 
 export class SecureStorage extends SecureStorageCommon {
@@ -18,6 +21,7 @@ export class SecureStorage extends SecureStorageCommon {
 		if (SecureStorage.preferences === undefined) {
 			const context = Utils.android.getApplicationContext();
 			SecureStorage.preferences = SecureStorage.openPreferences(context);
+			SecureStorage.migrateLegacyStorage(context);
 			SecureStorage.deleteLegacyStorage(context);
 		}
 	}
@@ -73,6 +77,32 @@ export class SecureStorage extends SecureStorageCommon {
 		const masterKey = new androidx.security.crypto.MasterKey.Builder(context, MASTER_KEY_ALIAS).setKeyScheme(androidx.security.crypto.MasterKey.KeyScheme.AES256_GCM).build();
 
 		return androidx.security.crypto.EncryptedSharedPreferences.create(context, PREFERENCES_FILE, masterKey, androidx.security.crypto.EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, androidx.security.crypto.EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+	}
+
+	// shortcut: needs the Hawk dependency only to read the legacy store once, remove this together with that dependency when every user has opened an updated app.
+	private static migrateLegacyStorage(context: any): void {
+		try {
+			const keys = context.getSharedPreferences(LEGACY_VALUES_FILE, MODE_PRIVATE).getAll().keySet().toArray();
+
+			if (keys.length === 0) {
+				return;
+			}
+
+			com.orhanobut.hawk.Hawk.init(context).build();
+			const editor = SecureStorage.preferences.edit();
+
+			for (let index = 0; index < keys.length; index++) {
+				const value = com.orhanobut.hawk.Hawk.get(keys[index]);
+
+				if (typeof value === 'string') {
+					editor.putString(keys[index], value);
+				}
+			}
+
+			editor.commit();
+		} catch (error) {
+			// A failed migration only costs a new login. The legacy files are deleted either way, so the plaintext key never stays behind.
+		}
 	}
 
 	private static deleteLegacyStorage(context: any): void {

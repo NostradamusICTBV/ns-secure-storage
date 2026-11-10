@@ -12,7 +12,7 @@ The Android backend is `androidx.security:security-crypto` `EncryptedSharedPrefe
 
 - **Minimum SDK: 24** (the legacy cleanup and the keyset recovery use `Context.deleteSharedPreferences`).
 - The store is opened once per process and shared by every `SecureStorage` instance, so creating instances is cheap.
-- **Migration:** on first construction the legacy Hawk files (`Hawk2.xml`, `crypto.KEY_256.xml`) are deleted. Existing secrets are not re-encrypted, so the app starts without them and the user logs in again. See [MIGRATION.md](./MIGRATION.md) for the steps when coming from `@nativescript/secure-storage`.
+- **Migration:** on first construction the values in the legacy Hawk store are copied into the new store and the legacy files (`Hawk2.xml`, `crypto.KEY_256.xml`) are deleted, so users stay logged in. Hawk is still bundled, only for this one-time read. See [MIGRATION.md](./MIGRATION.md) for the steps when coming from `@nativescript/secure-storage`.
 - Opening the store is tried twice. If it still fails, because the Keystore keyset was invalidated (device-credential change, restore to another device), the store is dropped and rebuilt empty rather than crashing.
 
 ## API

@@ -11,12 +11,11 @@
 ## What happens to stored data
 
 - **iOS: nothing changes.** Values stay in the Keychain under the same service and keys, so users stay logged in.
-- **Android: stored values are not migrated.** The first time a `SecureStorage` instance is created, the legacy `Hawk2.xml` and `crypto.KEY_256.xml` are deleted and the new store starts empty. Every value read through the plugin returns `null` until it is written again.
+- **Android: stored values are migrated once.** The first time a `SecureStorage` instance is created, the string values in the legacy Hawk store are copied into the new store. After that the legacy `Hawk2.xml` and `crypto.KEY_256.xml` are deleted. Users stay logged in.
 
-For an app that keeps its API token in secure storage this means **every Android user has to log in once after the update**. Plan for that before releasing:
+The legacy files are deleted even when the migration fails, so the plaintext key never stays behind. In that case every value returns `null` until it is written again, and the user logs in once. Make sure a missing token leads to the login screen and not to an error state.
 
-- Make sure a missing token leads to the login screen and not to an error state.
-- For unattended or shared devices, such as a kiosk or a clock terminal, someone has to log in on each device after the update. Schedule the rollout accordingly.
+Hawk is still bundled, only to read the legacy store during this migration. It can be removed in a later version, once every user has opened an updated app.
 
 ## Steps
 
@@ -41,7 +40,7 @@ For an app that keeps its API token in secure storage this means **every Android
 
 4. Check the Android minimum SDK. The plugin needs **API 24** or higher (`minSdkVersion` in `App_Resources/Android/app.gradle`).
 
-5. Rebuild from a clean state, because the native Gradle dependency changed from Hawk to `androidx.security:security-crypto`:
+5. Rebuild from a clean state, because the native Gradle dependency `androidx.security:security-crypto` was added:
 
    ```bash
    ns clean
@@ -52,7 +51,7 @@ For an app that keeps its API token in secure storage this means **every Android
 
 ## Behaviour differences on Android
 
-- **Values are strings.** The typed API already only accepted strings; values that were written to Hawk directly from native code are not readable.
+- **Values are strings.** The typed API already only accepted strings; other values that were written to Hawk directly from native code are not migrated.
 - **One store per process.** All `SecureStorage` instances share the same opened store, so creating an instance per call is cheap.
 - **Keystore invalidation resets the store.** When the Keystore key can no longer decrypt the data, for example after the data was restored on another device, opening the store fails twice in a row and the store is dropped and rebuilt empty. The app sees `null` values and the user logs in again.
 - **Backups.** The encrypted file can be included in an Android backup, but the key never leaves the device. A restore on another device therefore ends in the reset described above. Apps with `android:allowBackup="false"` are not affected.
@@ -67,6 +66,7 @@ adb shell run-as <application id> ls shared_prefs
 
 - `Hawk2.xml` and `crypto.KEY_256.xml` are gone.
 - `secure_prefs.xml` exists and contains only encrypted keys and values.
+- A user who was logged in before the update is still logged in.
 - Logging in works, and the session survives an app restart.
 
 ## Rolling back

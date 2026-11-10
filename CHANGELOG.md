@@ -8,6 +8,6 @@ Fork of `@nativescript/secure-storage` 4.0.2 for the Nostradamus apps.
 
 ### 🩹 Changes
 
-- **android:** delete the legacy `Hawk2.xml` / `crypto.KEY_256.xml` on first run; existing secrets are not migrated, so the user re-authenticates.
+- **android:** migrate the values of the legacy Hawk store on first run and then delete `Hawk2.xml` / `crypto.KEY_256.xml`, so users stay logged in. Hawk stays bundled for this one-time read.
 - **android:** rebuild the store if the Keystore keyset is invalidated instead of crashing.
 - Package renamed to `@nostradamus/ns-secure-storage`; standalone `tsc` build replacing the nx monorepo setup. iOS backend unchanged.

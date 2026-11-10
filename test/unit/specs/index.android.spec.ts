@@ -63,8 +63,32 @@ class FakeMasterKeyBuilder {
 	}
 }
 
-const context = { deleteSharedPreferences: mock((): boolean => true) };
+const legacyValues: Map<string, unknown> = new Map<string, unknown>();
+
+const context = {
+	deleteSharedPreferences: mock((name: string): boolean => {
+		if (name === 'Hawk2') {
+			legacyValues.clear();
+		}
+
+		return true;
+	}),
+	getSharedPreferences: mock(() => ({
+		getAll: () => ({
+			keySet: () => ({
+				toArray: (): string[] => [...legacyValues.keys()],
+			}),
+		}),
+	})),
+};
 const createPreferences = mock((): FakePreferences => new FakePreferences());
+
+const hawk = {
+	init: mock(() => ({ build: (): void => undefined })),
+	get: mock((key: string): unknown => legacyValues.get(key) ?? null),
+};
+
+(globalThis as Record<string, unknown>).com = { orhanobut: { hawk: { Hawk: hawk } } };
 
 (globalThis as Record<string, unknown>).androidx = {
 	security: {
@@ -107,7 +131,11 @@ const failOpening = (times: number): void => {
 describe('@/index.android', () => {
 	beforeEach(() => {
 		(SecureStorage as unknown as { preferences: unknown }).preferences = undefined;
+		legacyValues.clear();
 		context.deleteSharedPreferences.mockClear();
+		context.getSharedPreferences.mockClear();
+		hawk.init.mockClear();
+		hawk.get.mockClear();
 		createPreferences.mockReset();
 		createPreferences.mockImplementation((): FakePreferences => new FakePreferences());
 	});
@@ -186,6 +214,55 @@ describe('@/index.android', () => {
 		new SecureStorage();
 		new SecureStorage();
 
+		expect(context.deleteSharedPreferences.mock.calls).toEqual([['Hawk2'], ['crypto.KEY_256']]);
+	});
+
+	it('should migrate the legacy Hawk values before the legacy files are deleted', () => {
+		// Arrange
+		legacyValues.set('ApiToken', 'token-1');
+		legacyValues.set('CurrentUser', 'user-1');
+
+		// Act
+		const storage = new SecureStorage();
+
+		// Assert
+		expect(storage.getSync({ key: 'ApiToken' })).toBe('token-1');
+		expect(storage.getSync({ key: 'CurrentUser' })).toBe('user-1');
+		expect(context.getSharedPreferences).toHaveBeenCalledWith('Hawk2', 0);
+		expect(context.deleteSharedPreferences.mock.calls).toEqual([['Hawk2'], ['crypto.KEY_256']]);
+	});
+
+	it('should not load Hawk when there are no legacy values', () => {
+		new SecureStorage();
+
+		expect(hawk.init).not.toHaveBeenCalled();
+	});
+
+	it('should skip legacy values that are not strings', () => {
+		// Arrange
+		legacyValues.set('ApiToken', 'token-1');
+		legacyValues.set('Counter', 5);
+
+		// Act
+		const storage = new SecureStorage();
+
+		// Assert
+		expect(storage.getSync({ key: 'ApiToken' })).toBe('token-1');
+		expect(storage.getSync({ key: 'Counter' })).toBeNull();
+	});
+
+	it('should delete the legacy files and keep working when the migration fails', () => {
+		// Arrange
+		legacyValues.set('ApiToken', 'token-1');
+		hawk.init.mockImplementationOnce(() => {
+			throw new Error('HAWK_UNAVAILABLE');
+		});
+
+		// Act
+		const storage = new SecureStorage();
+
+		// Assert
+		expect(storage.getSync({ key: 'ApiToken' })).toBeNull();
 		expect(context.deleteSharedPreferences.mock.calls).toEqual([['Hawk2'], ['crypto.KEY_256']]);
 	});
 
