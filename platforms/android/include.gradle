@@ -1,8 +1,11 @@
 repositories {
     google()
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     implementation "androidx.security:security-crypto:1.1.0-alpha06"
+    // Only used to read the legacy store once during the migration; remove it together with migrateLegacyStorage.
+    implementation 'com.github.triniwiz:hawk:919b077103'
 }
