@@ -7,7 +7,8 @@ declare const com: any;
 const PREFERENCES_FILE = 'secure_prefs';
 const MASTER_KEY_ALIAS = 'nostradamus_secure_prefs_key';
 const LEGACY_VALUES_FILE = 'Hawk2';
-const LEGACY_PREFERENCES = [LEGACY_VALUES_FILE, 'crypto.KEY_256'];
+// The plaintext key goes first, so nothing that goes wrong with the values file can leave it behind.
+const LEGACY_PREFERENCES = ['crypto.KEY_256', LEGACY_VALUES_FILE];
 const MODE_PRIVATE = 0; // android.content.Context.MODE_PRIVATE
 const OPEN_ATTEMPTS = 2;
 
@@ -107,7 +108,10 @@ export class SecureStorage extends SecureStorageCommon {
 
 	private static deleteLegacyStorage(context: any): void {
 		for (const name of LEGACY_PREFERENCES) {
-			context.deleteSharedPreferences(name);
+			if (context.deleteSharedPreferences(name) === false) {
+				// The file is still on disk: empty it instead, so the plaintext key and the values it decrypts never stay behind together. The delete itself is retried on every launch.
+				context.getSharedPreferences(name, MODE_PRIVATE).edit().clear().commit();
+			}
 		}
 	}
 }

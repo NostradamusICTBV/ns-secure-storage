@@ -64,16 +64,31 @@ class FakeMasterKeyBuilder {
 }
 
 const legacyValues: Map<string, unknown> = new Map<string, unknown>();
+const undeletablePreferences: Set<string> = new Set<string>();
+const emptiedPreferences: string[] = [];
 
 const context = {
 	deleteSharedPreferences: mock((name: string): boolean => {
+		if (undeletablePreferences.has(name)) {
+			return false;
+		}
+
 		if (name === 'Hawk2') {
 			legacyValues.clear();
 		}
 
 		return true;
 	}),
-	getSharedPreferences: mock(() => ({
+	getSharedPreferences: mock((name: string) => ({
+		edit: () => ({
+			clear: () => ({
+				commit: (): boolean => {
+					emptiedPreferences.push(name);
+
+					return true;
+				},
+			}),
+		}),
 		getAll: () => ({
 			keySet: () => ({
 				toArray: (): string[] => [...legacyValues.keys()],
@@ -132,6 +147,8 @@ describe('@/index.android', () => {
 	beforeEach(() => {
 		(SecureStorage as unknown as { preferences: unknown }).preferences = undefined;
 		legacyValues.clear();
+		undeletablePreferences.clear();
+		emptiedPreferences.length = 0;
 		context.deleteSharedPreferences.mockClear();
 		context.getSharedPreferences.mockClear();
 		hawk.init.mockClear();
@@ -214,7 +231,31 @@ describe('@/index.android', () => {
 		new SecureStorage();
 		new SecureStorage();
 
-		expect(context.deleteSharedPreferences.mock.calls).toEqual([['Hawk2'], ['crypto.KEY_256']]);
+		expect(context.deleteSharedPreferences.mock.calls).toEqual([['crypto.KEY_256'], ['Hawk2']]);
+		expect(emptiedPreferences).toEqual([]);
+	});
+
+	it('should empty the legacy values and still delete the legacy key when the values file cannot be deleted', () => {
+		// Arrange
+		undeletablePreferences.add('Hawk2');
+
+		// Act
+		new SecureStorage();
+
+		// Assert
+		expect(context.deleteSharedPreferences.mock.calls).toEqual([['crypto.KEY_256'], ['Hawk2']]);
+		expect(emptiedPreferences).toEqual(['Hawk2']);
+	});
+
+	it('should empty the legacy key when the key file cannot be deleted', () => {
+		// Arrange
+		undeletablePreferences.add('crypto.KEY_256');
+
+		// Act
+		new SecureStorage();
+
+		// Assert
+		expect(emptiedPreferences).toEqual(['crypto.KEY_256']);
 	});
 
 	it('should migrate the legacy Hawk values before the legacy files are deleted', () => {
@@ -229,7 +270,7 @@ describe('@/index.android', () => {
 		expect(storage.getSync({ key: 'ApiToken' })).toBe('token-1');
 		expect(storage.getSync({ key: 'CurrentUser' })).toBe('user-1');
 		expect(context.getSharedPreferences).toHaveBeenCalledWith('Hawk2', 0);
-		expect(context.deleteSharedPreferences.mock.calls).toEqual([['Hawk2'], ['crypto.KEY_256']]);
+		expect(context.deleteSharedPreferences.mock.calls).toEqual([['crypto.KEY_256'], ['Hawk2']]);
 	});
 
 	it('should not load Hawk when there are no legacy values', () => {
@@ -263,7 +304,7 @@ describe('@/index.android', () => {
 
 		// Assert
 		expect(storage.getSync({ key: 'ApiToken' })).toBeNull();
-		expect(context.deleteSharedPreferences.mock.calls).toEqual([['Hawk2'], ['crypto.KEY_256']]);
+		expect(context.deleteSharedPreferences.mock.calls).toEqual([['crypto.KEY_256'], ['Hawk2']]);
 	});
 
 	it('should keep the store when opening it fails only once', () => {
