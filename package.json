@@ -1,6 +1,6 @@
 {
 	"name": "@nostradamus/ns-secure-storage",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "NativeScript secure storage for the Nostradamus apps: Android Keystore-backed EncryptedSharedPreferences and iOS Keychain. Fork of @nativescript/secure-storage.",
 	"main": "dist/index",
 	"types": "dist/index.d.ts",
