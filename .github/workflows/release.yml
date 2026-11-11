@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish the package tarball
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: .bun-version
+      - name: Check that the tag matches the package version
+        run: |
+          version="v$(jq -r .version package.json)"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $version."
+            exit 1
+          fi
+      - run: bun install --frozen-lockfile
+      - run: bun run code:format:check
+      - run: bun run test:unit
+      # Packing runs the build through the prepack script.
+      - run: bun pm pack --destination "$RUNNER_TEMP/package"
+      - name: Create the release with the tarball attached
+        run: gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP"/package/*.tgz --verify-tag --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
